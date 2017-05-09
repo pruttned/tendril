@@ -1,6 +1,7 @@
 'use strict';
 
-const gulp = require('gulp'),
+const
+    gulp = require('gulp'),
     del = require('del'),
     print = require('gulp-print'),
     sass = require('gulp-sass'),
@@ -14,7 +15,7 @@ const gulp = require('gulp'),
     gulpSequence = require('gulp-sequence');
 
 const srcRoot = 'src/';
-const buildRoot = '.tmp/';
+const assetsDevRoot = 'assets-dev/';
 const assetsRoot = 'assets/';
 const paths = {
     rootSass: srcRoot + 'sass/site.scss',
@@ -31,7 +32,7 @@ gulp.task('css', function () {
         .pipe(autoprefixer({
             cascade: false
         }))
-        .pipe(gulp.dest(buildRoot));
+        .pipe(gulp.dest(assetsDevRoot));
 });
 
 gulp.task('inject:sass', function () {
@@ -49,10 +50,14 @@ gulp.task('inject:sass', function () {
         .pipe(gulp.dest(f => f.base));
 });
 
-gulp.task('clean', function () {
+gulp.task('clean', ['clean:dev'], function () {
     return del([
         assetsRoot,
-        buildRoot
+    ]);
+});
+gulp.task('clean:dev', function () {
+    return del([
+        assetsDevRoot
     ]);
 });
 
@@ -68,17 +73,14 @@ gulp.task('watch', function () {
 
 gulp.task('copy', () => {
     gulp.src(srcRoot + '_includes/**/*')
-        .pipe(print())
         .pipe(gulp.dest('_includes'));
 });
 
 gulp.task('build:main', ['css', 'copy']);
 gulp.task('build:post', () => {
-    let cssFilter = filter('**/*.css', { restore: true });
-    let htmlFilter = filter('**/*.html', { restore: true });
     let assetsFilter = filter(['**/*', '!**/*.html'], { restore: true });
 
-    return gulp.src('_includes/' + '*.html', {base: '.'})
+    return gulp.src('_includes/' + '*.html', { base: '.' })
         .pipe(useref())
         .pipe(assetsFilter)
         .pipe(rev())
@@ -87,4 +89,8 @@ gulp.task('build:post', () => {
         .pipe(gulp.dest('.'));
 });
 
-gulp.task('build', gulpSequence('clean', 'build:main', 'build:post'));
+gulp.task('build', gulpSequence('clean', 'build:main', 'build:post', 'clean:dev'));
+
+gulp.task('dev:main', ['css', 'copy']);
+
+gulp.task('dev', gulpSequence('clean', 'dev:main', 'watch'));
