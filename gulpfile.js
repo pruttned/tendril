@@ -12,19 +12,27 @@ const
     useref = require('gulp-useref'),
     filter = require('gulp-filter'),
     autoprefixer = require('gulp-autoprefixer'),
-    gulpSequence = require('gulp-sequence');
+    gulpSequence = require('gulp-sequence'),
+    connect = require('gulp-connect');
 
 const srcRoot = 'src/';
-const assetsDevRoot = 'assets-dev/';
+const destRoot = 'dest/';
+const tmpRoot = '.tmp/';
 const assetsRoot = 'assets/';
 const paths = {
     rootSass: srcRoot + 'sass/site.scss',
-    sass: srcRoot + 'sass/**/*.scss'
+    sass: srcRoot + 'sass/**/*.scss',
+    html: srcRoot + '**/*.html'
 };
 
 function isOnlyChange(event) {
     return event.type === 'changed';
 }
+
+gulp.task('reload:html', function () {
+    gulp.src(paths.html)
+        .pipe(connect.reload());
+});
 
 gulp.task('css', function () {
     return gulp.src([paths.rootSass])
@@ -32,7 +40,8 @@ gulp.task('css', function () {
         .pipe(autoprefixer({
             cascade: false
         }))
-        .pipe(gulp.dest(assetsDevRoot));
+        .pipe(gulp.dest(tmpRoot))
+        .pipe(connect.reload());
 });
 
 gulp.task('inject:sass', function () {
@@ -50,47 +59,46 @@ gulp.task('inject:sass', function () {
         .pipe(gulp.dest(f => f.base));
 });
 
-gulp.task('clean', ['clean:dev'], function () {
+gulp.task('clean', function () {
     return del([
-        assetsRoot,
-    ]);
-});
-gulp.task('clean:dev', function () {
-    return del([
-        assetsDevRoot
+        destRoot,
+        tmpRoot
     ]);
 });
 
 gulp.task('watch', function () {
-    gulp.watch(paths.sass, function (event) {
+    gulp.watch(paths.sass, event => {
         if (isOnlyChange(event)) {
             gulp.start('css');
         } else {
             gulp.start('inject:sass');
         }
     });
+    gulp.watch(paths.html, () => {
+        gulp.start('reload:html');
+    });
 });
 
-gulp.task('copy', () => {
-    gulp.src(srcRoot + '_includes/**/*')
-        .pipe(gulp.dest('_includes'));
-});
-
-gulp.task('build:main', ['css', 'copy']);
+gulp.task('build:main', ['css']);
 gulp.task('build:post', () => {
     let assetsFilter = filter(['**/*', '!**/*.html'], { restore: true });
 
-    return gulp.src('_includes/' + '*.html', { base: '.' })
+    return gulp.src(paths.html, { base: srcRoot })
         .pipe(useref())
         .pipe(assetsFilter)
         .pipe(rev())
         .pipe(assetsFilter.restore)
         .pipe(revReplace())
-        .pipe(gulp.dest('.'));
+        .pipe(gulp.dest(destRoot));
 });
 
-gulp.task('build', gulpSequence('clean', 'build:main', 'build:post', 'clean:dev'));
+gulp.task('build', gulpSequence('clean', 'build:main', 'build:post'));
 
-gulp.task('dev:main', ['css', 'copy']);
+gulp.task('serve', function () {
+    connect.server({
+        root: ['src', '.tmp'],
+        livereload: true
+    });
+});
 
-gulp.task('dev', gulpSequence('clean', 'dev:main', 'watch'));
+gulp.task('default', gulpSequence('serve', 'watch'));
