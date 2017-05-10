@@ -16,7 +16,7 @@ const
     connect = require('gulp-connect');
 
 const srcRoot = 'src/';
-const destRoot = 'dest/';
+const distRoot = 'dist/';
 const tmpRoot = '.tmp/';
 const assetsRoot = 'assets/';
 const paths = {
@@ -61,7 +61,7 @@ gulp.task('inject:sass', function () {
 
 gulp.task('clean', function () {
     return del([
-        destRoot,
+        distRoot,
         tmpRoot
     ]);
 });
@@ -89,7 +89,7 @@ gulp.task('build:post', () => {
         .pipe(rev())
         .pipe(assetsFilter.restore)
         .pipe(revReplace())
-        .pipe(gulp.dest(destRoot));
+        .pipe(gulp.dest(distRoot));
 });
 
 gulp.task('build', gulpSequence('clean', 'build:main', 'build:post'));
