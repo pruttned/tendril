@@ -13,16 +13,21 @@ const
     filter = require('gulp-filter'),
     autoprefixer = require('gulp-autoprefixer'),
     gulpSequence = require('gulp-sequence'),
-    connect = require('gulp-connect');
+    connect = require('gulp-connect'),
+    spritesmith = require('gulp.spritesmith');
 
 const srcRoot = 'src/';
 const distRoot = 'dist/';
 const tmpRoot = '.tmp/';
-const assetsRoot = 'assets/';
+const assetsRoot = distRoot + 'assets/';
+const sassStaticInclRoot = srcRoot + 'sass/static-incl';
 const paths = {
     rootSass: srcRoot + 'sass/site.scss',
     sass: srcRoot + 'sass/**/*.scss',
-    html: srcRoot + '**/*.html'
+    html: srcRoot + '**/*.html',
+    pngSprite: 'src/img/sprite/png/**/*.png',
+    pngSpriteDest: tmpRoot + 'img/',
+    pngSpriteSassDest : sassStaticInclRoot
 };
 
 function isOnlyChange(event) {
@@ -47,7 +52,7 @@ gulp.task('css', function () {
 gulp.task('inject:sass', function () {
     var target = gulp.src(paths.rootSass);
 
-    var sources = gulp.src([paths.sass].concat(['!' + paths.rootSass]), {
+    var sources = gulp.src([paths.sass].concat(['!' + paths.rootSass, `${sassStaticInclRoot}**/*.scss`]), {
         read: false
     });
 
@@ -57,6 +62,27 @@ gulp.task('inject:sass', function () {
         endtag: '// endinject',
     }))
         .pipe(gulp.dest(f => f.base));
+});
+
+gulp.task('sprite:png', function () {
+    var spriteData =
+        gulp.src(paths.pngSprite)
+            .pipe(spritesmith({
+                imgName: 'sprite.png',
+                cssFormat: 'scss',
+                cssName: '_png-sprite.scss',
+                cssVarMap: function (sprite) {
+                    sprite.name = 'sprite-' + sprite.name
+                },
+                padding: 2,
+                imgPath: 'img/sprite.png'
+            }));
+
+    spriteData.img
+        .pipe(gulp.dest(paths.pngSpriteDest));
+
+    spriteData.css
+        .pipe(gulp.dest(paths.pngSpriteSassDest));
 });
 
 gulp.task('clean', function () {
@@ -77,6 +103,9 @@ gulp.task('watch', function () {
     gulp.watch(paths.html, () => {
         gulp.start('reload:html');
     });
+    gulp.watch(paths.pngSprite, function (event) {
+        gulp.start('sprite:png');
+    });    
 });
 
 gulp.task('build:main', ['css']);

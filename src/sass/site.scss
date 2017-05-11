@@ -8,6 +8,10 @@
 @import "node_modules/bootstrap-sass/assets/stylesheets/bootstrap/scaffolding";
 @import "node_modules/bootstrap-sass/assets/stylesheets/bootstrap/grid";
 
+//static incls
+@import "src/sass/static-incl/_png-sprite.scss";
+
+
 $main-color-bg: #070707;
 $header-color-bg: #3c3d37;
 

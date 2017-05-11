@@ -1,18 +1,16 @@
 $block: '.social-btn';
 #{$block} {
     text-align: center;
-    width: 78px;
-    height: 78px;
 
     cursor:pointer;
 
     &--fb {
-        background: url(/img/icon-fb.png)
+        @include sprite($sprite-icon-fb);
     }
     &--devlog {
-        background: url(/img/icon-devlog.png)
+        @include sprite($sprite-icon-devlog);
     }
     &--indiedb {
-        background: url(/img/icon-indiedb.png)
+        @include sprite($sprite-icon-indiedb);
     }
 }
