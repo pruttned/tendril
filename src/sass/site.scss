@@ -6,14 +6,22 @@
 @import "node_modules/bootstrap-sass/assets/stylesheets/bootstrap/print";
 // Core CSS
 @import "node_modules/bootstrap-sass/assets/stylesheets/bootstrap/scaffolding";
+@import "node_modules/bootstrap-sass/assets/stylesheets/bootstrap/grid";
 
-body{
-    background:white;
-}
+$main-color-bg: #070707;
+$header-color-bg: #3c3d37;
 
 // inject:scss
 
-@import "_module.scss";
+@import "_header.scss";
+
+@import "_logo.scss";
+
+@import "_main.scss";
+
+@import "_social-btn.scss";
+
+@import "_social-btns.scss";
 
 // endinject
 

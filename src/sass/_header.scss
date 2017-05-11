@@ -1,0 +1,17 @@
+$block: '.header';
+#{$block} {
+    padding: 150px 0 50px 0;
+    background: $header-color-bg;
+    background: url(/img/head-bg.png);
+    background-repeat: repeat-x;
+    background-position-y: bottom;
+    // &_logo {
+    // }
+
+    &_social-wrap{
+        text-align: center;
+    }
+    &_social{
+        display: inline-block;
+    }
+}

@@ -1,0 +1,9 @@
+$block: '.social-btns';
+#{$block} {
+    @include clearfix;
+    text-align: center;
+    &_btn{
+        float: left;
+        margin: 0 10px;
+    }
+}
