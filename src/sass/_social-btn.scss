@@ -1,16 +1,23 @@
 $block: '.social-btn';
 #{$block} {
     text-align: center;
-
-    cursor:pointer;
-
+    cursor: pointer;
     &--fb {
         @include sprite($sprite-icon-fb);
+        &:hover {
+            @include sprite-position($sprite-icon-fb-hover);
+        }
     }
     &--devlog {
         @include sprite($sprite-icon-devlog);
+        &:hover {
+            @include sprite-position($sprite-icon-devlog-hover);
+        }
     }
     &--indiedb {
         @include sprite($sprite-icon-indiedb);
+        &:hover {
+            @include sprite-position($sprite-icon-indiedb-hover);
+        }
     }
 }
