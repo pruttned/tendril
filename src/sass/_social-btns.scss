@@ -2,8 +2,12 @@ $block: '.social-btns';
 #{$block} {
     @include clearfix;
     text-align: center;
-    &_btn{
+    &_btn {
         float: left;
-        margin: 0 10px;
+        margin: 0 5px;
+ 
+        @media (min-width: $screen-sm-min) {
+            margin: 0 20px;
+        }
     }
 }
