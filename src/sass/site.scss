@@ -12,10 +12,19 @@
 @import "src/sass/static-incl/_png-sprite.scss";
 
 
+$main-color: #949494;
 $main-color-bg: #070707;
 $header-color-bg: #3b3a34;
 
+em {
+    font-style: normal;
+}
+
 // inject:scss
+
+@import "gallery.scss";
+
+@import "preface.scss";
 
 @import "_header.scss";
 
@@ -26,6 +35,10 @@ $header-color-bg: #3b3a34;
 @import "_social-btn.scss";
 
 @import "_social-btns.scss";
+
+@import "_text.scss";
+
+@import "static-incl/_png-sprite.scss";
 
 // endinject
 

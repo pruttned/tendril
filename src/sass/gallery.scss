@@ -1,0 +1,12 @@
+$block: '.gallery';
+#{$block} {
+    margin: 40px 0;
+    text-align: center;
+    &_item {
+        border: solid 3px $main-color;
+        box-sizing: content-box;
+        width: 100%;
+        height: auto;
+        max-width: 870px;
+    }
+}

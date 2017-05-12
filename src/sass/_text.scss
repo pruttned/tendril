@@ -1,0 +1,12 @@
+$block: '.text';
+#{$block} {
+    &--strong {
+        font-weight: bold;
+    }
+    &--center {
+        text-align: center;
+    }
+    &--title {
+        text-align: center;
+    }
+}
