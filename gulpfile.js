@@ -129,6 +129,9 @@ gulp.task('build:post', () => {
             processImport: false
         }))
         .pipe(cssFilter.restore)        
+        .pipe(imgFilter)
+        .pipe(imagemin())
+        .pipe(imgFilter.restore)             
         .pipe(assetsFilter)
         .pipe(rev())
         .pipe(assetsFilter.restore)
@@ -139,13 +142,6 @@ gulp.task('build:post', () => {
 });
 
 gulp.task('build', gulpSequence('clean', 'build:main', 'build:post'));
-
-// //minify images in package
-// gulp.task('package:post:img', ['package:main'], function () {
-//     return gulp.src(paths.packageImages)
-//     .pipe(imagemin())
-//     .pipe(gulp.dest(deployPackageRoot));
-// });
 
 gulp.task('serve', function () {
     connect.server({
