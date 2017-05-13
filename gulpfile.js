@@ -78,7 +78,7 @@ gulp.task('sprite:png', function () {
                     sprite.name = 'sprite-' + sprite.name
                 },
                 padding: 2,
-                imgPath: 'img/' + pngSpriteFileName
+                imgPath: '/img/' + pngSpriteFileName
             }));
 
     spriteData.img
@@ -111,7 +111,7 @@ gulp.task('watch', function () {
     });
 });
 
-gulp.task('build:main', ['css', 'sprite:png']);
+gulp.task('build:main', gulpSequence('sprite:png', 'css'));
 gulp.task('build:post', () => {
     let assetsFilter = filter(['**/*', '!**/*.html'], { restore: true, dot: true });
     let htmlFilter = filter(['**/*.html'], { restore: true });
