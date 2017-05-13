@@ -36,7 +36,8 @@ const paths = {
     pngSpriteSassDest: sassStaticInclRoot,
     faviconData: tmpRoot + 'faviconData.json',
     favicon: srcRoot + 'favicon.png',
-    faviconDest: distRoot + 'favicon'
+    faviconDest: distRoot + 'favicon',
+    copy: [srcRoot + 'CNAME']
 };
 
 function isOnlyChange(event) {
@@ -212,7 +213,12 @@ gulp.task('build:post', () => {
         .pipe(gulp.dest(distRoot));
 });
 
-gulp.task('build', gulpSequence('clean', 'build:main', 'build:post', 'favicon']));
+gulp.task('copy', () => {
+    gulp.src(paths.copy, { base: './src' })
+        .pipe(gulp.dest(distRoot));
+});
+
+gulp.task('build', gulpSequence('clean', 'build:main', 'build:post', ['favicon', 'copy']));
 
 gulp.task('serve', function () {
     connect.server({
