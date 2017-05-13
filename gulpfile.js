@@ -14,20 +14,23 @@ const
     autoprefixer = require('gulp-autoprefixer'),
     gulpSequence = require('gulp-sequence'),
     connect = require('gulp-connect'),
-    spritesmith = require('gulp.spritesmith');
+    spritesmith = require('gulp.spritesmith'),
+    imagemin = require('gulp-imagemin'),
+    mergeStream = require('merge-stream');
 
 const srcRoot = 'src/';
 const distRoot = 'dist/';
 const tmpRoot = '.tmp/';
-const assetsRoot = distRoot + 'assets/';
 const sassStaticInclRoot = srcRoot + 'sass/static-incl';
+const pngSpriteFileName = 'sprite.png';
+const allImgsBaseGlob = '**/*.{png,jpg,gif}';
 const paths = {
     rootSass: srcRoot + 'sass/site.scss',
     sass: srcRoot + 'sass/**/*.scss',
     html: srcRoot + '**/*.html',
     pngSprite: 'src/img/sprite/png/**/*.png',
     pngSpriteDest: tmpRoot + 'img/',
-    pngSpriteSassDest : sassStaticInclRoot
+    pngSpriteSassDest: sassStaticInclRoot
 };
 
 function isOnlyChange(event) {
@@ -68,14 +71,14 @@ gulp.task('sprite:png', function () {
     var spriteData =
         gulp.src(paths.pngSprite)
             .pipe(spritesmith({
-                imgName: 'sprite.png',
+                imgName: pngSpriteFileName,
                 cssFormat: 'scss',
                 cssName: '_png-sprite.scss',
                 cssVarMap: function (sprite) {
                     sprite.name = 'sprite-' + sprite.name
                 },
                 padding: 2,
-                imgPath: 'img/sprite.png'
+                imgPath: 'img/' + pngSpriteFileName
             }));
 
     spriteData.img
@@ -105,28 +108,48 @@ gulp.task('watch', function () {
     });
     gulp.watch(paths.pngSprite, function (event) {
         gulp.start('sprite:png');
-    });    
+    });
 });
 
 gulp.task('build:main', ['css', 'sprite:png']);
 gulp.task('build:post', () => {
-    let assetsFilter = filter(['**/*', '!**/*.html'], { restore: true });
+    let assetsFilter = filter(['**/*', '!**/*.html'], { restore: true, dot: true });
+    let htmlFilter = filter(['**/*.html'], { restore: true });
+    let imgFilter = filter([allImgsBaseGlob], { restore: true, dot: true });
 
-    return gulp.src(paths.html, { base: srcRoot })
+    return mergeStream(gulp.src([paths.html, srcRoot + allImgsBaseGlob, '!' + paths.pngSprite], { base: 'src' }),
+        gulp.src(paths.pngSpriteDest + pngSpriteFileName, { passthrough: true, base: '.tmp' }))
+        .pipe(htmlFilter)
         .pipe(useref())
+        .pipe(htmlFilter.restore)
         .pipe(assetsFilter)
         .pipe(rev())
         .pipe(assetsFilter.restore)
-        .pipe(revReplace())
+        .pipe(revReplace({
+            replaceInExtensions: ['.html', '.css']
+        }))
         .pipe(gulp.dest(distRoot));
 });
 
 gulp.task('build', gulpSequence('clean', 'build:main', 'build:post'));
 
+// //minify images in package
+// gulp.task('package:post:img', ['package:main'], function () {
+//     return gulp.src(paths.packageImages)
+//     .pipe(imagemin())
+//     .pipe(gulp.dest(deployPackageRoot));
+// });
+
 gulp.task('serve', function () {
     connect.server({
         root: ['src', '.tmp'],
         livereload: true
+    });
+});
+
+gulp.task('serve:dist', function () {
+    connect.server({
+        root: ['dist']
     });
 });
 
