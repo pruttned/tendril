@@ -16,7 +16,8 @@ const
     connect = require('gulp-connect'),
     spritesmith = require('gulp.spritesmith'),
     imagemin = require('gulp-imagemin'),
-    mergeStream = require('merge-stream');
+    mergeStream = require('merge-stream'),
+    cleanCss = require('gulp-clean-css');
 
 const srcRoot = 'src/';
 const distRoot = 'dist/';
@@ -115,6 +116,7 @@ gulp.task('build:main', gulpSequence('sprite:png', 'css'));
 gulp.task('build:post', () => {
     let assetsFilter = filter(['**/*', '!**/*.html'], { restore: true, dot: true });
     let htmlFilter = filter(['**/*.html'], { restore: true });
+    let cssFilter = filter(['**/*.css'], { restore: true });
     let imgFilter = filter([allImgsBaseGlob], { restore: true, dot: true });
 
     return mergeStream(gulp.src([paths.html, srcRoot + allImgsBaseGlob, '!' + paths.pngSprite], { base: 'src' }),
@@ -122,6 +124,11 @@ gulp.task('build:post', () => {
         .pipe(htmlFilter)
         .pipe(useref())
         .pipe(htmlFilter.restore)
+        .pipe(cssFilter)
+        .pipe(cleanCss({
+            processImport: false
+        }))
+        .pipe(cssFilter.restore)        
         .pipe(assetsFilter)
         .pipe(rev())
         .pipe(assetsFilter.restore)
