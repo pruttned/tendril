@@ -1,0 +1,9 @@
+$block: '.footer';
+#{$block} {
+    background: $main-color-bg;
+    padding-bottom: 30px;
+    
+    &_socials {
+        text-align: center;
+    }
+}
