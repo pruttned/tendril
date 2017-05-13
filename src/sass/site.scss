@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css?family=VT323');
+
 // Core variables and mixins
 @import "node_modules/bootstrap-sass/assets/stylesheets/bootstrap/variables";
 @import "node_modules/bootstrap-sass/assets/stylesheets/bootstrap/mixins";
@@ -12,12 +14,31 @@
 @import "src/sass/static-incl/_png-sprite.scss";
 
 
-$main-color: #949494;
+$main-color: #988886;
+$highlight-color: #e4d3d2;
 $main-color-bg: #070707;
 $header-color-bg: #3b3a34;
 
-em {
+h1, h2, h3, h4, strong, em {
+    color: $highlight-color;
+    font-weight: normal;
     font-style: normal;
+}
+h1, h2, h3, h4 {
+    text-align: center;
+}
+h1 {
+    margin-top: 15px;
+}
+h2 {
+    margin-top: 25px;
+}
+li {
+    list-style-type: square;
+}
+body {
+    font-family: 'VT323', monospace;
+    font-size: 2.6rem;
 }
 
 // inject:scss
