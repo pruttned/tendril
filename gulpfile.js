@@ -108,7 +108,7 @@ gulp.task('watch', function () {
     });    
 });
 
-gulp.task('build:main', ['css']);
+gulp.task('build:main', ['css', 'sprite:png']);
 gulp.task('build:post', () => {
     let assetsFilter = filter(['**/*', '!**/*.html'], { restore: true });
 
@@ -130,4 +130,4 @@ gulp.task('serve', function () {
     });
 });
 
-gulp.task('default', gulpSequence('serve', 'watch'));
+gulp.task('default', gulpSequence('build:main', 'serve', 'watch'));
