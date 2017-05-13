@@ -17,7 +17,9 @@ const
     spritesmith = require('gulp.spritesmith'),
     imagemin = require('gulp-imagemin'),
     mergeStream = require('merge-stream'),
-    cleanCss = require('gulp-clean-css');
+    cleanCss = require('gulp-clean-css'),
+    realFavicon = require ('gulp-real-favicon'),
+    fs = require('fs');
 
 const srcRoot = 'src/';
 const distRoot = 'dist/';
@@ -31,7 +33,10 @@ const paths = {
     html: srcRoot + '**/*.html',
     pngSprite: 'src/img/sprite/png/**/*.png',
     pngSpriteDest: tmpRoot + 'img/',
-    pngSpriteSassDest: sassStaticInclRoot
+    pngSpriteSassDest: sassStaticInclRoot,
+    faviconData: tmpRoot + 'faviconData.json',
+    favicon: srcRoot + 'favicon.png',
+    faviconDest: distRoot + 'favicon'
 };
 
 function isOnlyChange(event) {
@@ -89,6 +94,72 @@ gulp.task('sprite:png', function () {
         .pipe(gulp.dest(paths.pngSpriteSassDest));
 });
 
+gulp.task('favicon:gen', function(done) {
+	realFavicon.generateFavicon({
+		masterPicture: paths.favicon,
+		dest: paths.faviconDest,
+		iconsPath: '/',
+		design: {
+			ios: {
+				pictureAspect: 'noChange',
+				assets: {
+					ios6AndPriorIcons: false,
+					ios7AndLaterIcons: false,
+					precomposedIcons: false,
+					declareOnlyDefaultIcon: true
+				}
+			},
+			desktopBrowser: {},
+			windows: {
+				pictureAspect: 'noChange',
+				backgroundColor: '#da532c',
+				onConflict: 'override',
+				assets: {
+					windows80Ie10Tile: false,
+					windows10Ie11EdgeTiles: {
+						small: false,
+						medium: true,
+						big: false,
+						rectangle: false
+					}
+				}
+			},
+			androidChrome: {
+				pictureAspect: 'noChange',
+				themeColor: '#ffffff',
+				manifest: {
+					display: 'standalone',
+					orientation: 'notSet',
+					onConflict: 'override',
+					declared: true
+				},
+				assets: {
+					legacyIcon: false,
+					lowResolutionIcons: false
+				}
+			},
+			safariPinnedTab: {
+				pictureAspect: 'blackAndWhite',
+				threshold: 54.6875,
+				themeColor: '#5bbad5'
+			}
+		},
+		settings: {
+			scalingAlgorithm: 'Mitchell',
+			errorOnImageTooSmall: false
+		},
+		markupFile: paths.faviconData
+	}, function() {
+		done();
+	});
+});
+
+gulp.task('favicon', ['favicon:gen'], function() {
+	return gulp.src([ distRoot + '/index.html' ])
+		.pipe(realFavicon.injectFaviconMarkups(JSON.parse(fs.readFileSync(paths.faviconData)).favicon.html_code))
+		.pipe(gulp.dest(distRoot));
+});
+
 gulp.task('clean', function () {
     return del([
         distRoot,
@@ -119,7 +190,7 @@ gulp.task('build:post', () => {
     let cssFilter = filter(['**/*.css'], { restore: true });
     let imgFilter = filter([allImgsBaseGlob], { restore: true, dot: true });
 
-    return mergeStream(gulp.src([paths.html, srcRoot + allImgsBaseGlob, '!' + paths.pngSprite], { base: 'src' }),
+    return mergeStream(gulp.src([paths.html, srcRoot + allImgsBaseGlob, '!' + paths.pngSprite, '!' + paths.favicon], { base: 'src' }),
         gulp.src(paths.pngSpriteDest + pngSpriteFileName, { passthrough: true, base: '.tmp' }))
         .pipe(htmlFilter)
         .pipe(useref())
@@ -141,7 +212,7 @@ gulp.task('build:post', () => {
         .pipe(gulp.dest(distRoot));
 });
 
-gulp.task('build', gulpSequence('clean', 'build:main', 'build:post'));
+gulp.task('build', gulpSequence('clean', 'build:main', 'favicon', 'build:post'));
 
 gulp.task('serve', function () {
     connect.server({
