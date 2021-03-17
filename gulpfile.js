@@ -1,25 +1,25 @@
 'use strict';
 
-const
-    gulp = require('gulp'),
-    del = require('del'),
-    print = require('gulp-print'),
-    sass = require('gulp-sass'),
-    concat = require('gulp-concat'),
-    inject = require('gulp-inject'),
-    rev = require('gulp-rev'),
-    revReplace = require('gulp-rev-replace'),
-    useref = require('gulp-useref'),
-    filter = require('gulp-filter'),
-    autoprefixer = require('gulp-autoprefixer'),
-    gulpSequence = require('gulp-sequence'),
-    connect = require('gulp-connect'),
-    spritesmith = require('gulp.spritesmith'),
-    imagemin = require('gulp-imagemin'),
-    mergeStream = require('merge-stream'),
-    cleanCss = require('gulp-clean-css'),
-    realFavicon = require('gulp-real-favicon'),
-    fs = require('fs');
+const del = require('del');
+const print = require('gulp-print');
+const sass = require('gulp-sass');
+const concat = require('gulp-concat');
+const inject = require('gulp-inject');
+const rev = require('gulp-rev');
+const revReplace = require('gulp-rev-replace');
+const useref = require('gulp-useref');
+const filter = require('gulp-filter');
+const autoprefixer = require('gulp-autoprefixer');
+const connect = require('gulp-connect');
+const spritesmith = require('gulp.spritesmith');
+const imagemin = require('gulp-imagemin');
+const mergeStream = require('merge-stream');
+const cleanCss = require('gulp-clean-css');
+const realFavicon = require('gulp-real-favicon');
+const fs = require('fs');
+const gulp = require('gulp');
+
+const { series, parallel } = gulp;
 
 const srcRoot = 'src/';
 const distRoot = 'dist/';
@@ -44,12 +44,12 @@ function isOnlyChange(event) {
     return event.type === 'changed';
 }
 
-gulp.task('reload:html', function () {
+const reloadHtml = function () {
     gulp.src(paths.html)
         .pipe(connect.reload());
-});
+};
 
-gulp.task('css', function () {
+const css = function () {
     return gulp.src([paths.rootSass])
         .pipe(sass().on('error', sass.logError))
         .pipe(autoprefixer({
@@ -57,9 +57,9 @@ gulp.task('css', function () {
         }))
         .pipe(gulp.dest(tmpRoot))
         .pipe(connect.reload());
-});
+};
 
-gulp.task('inject:sass', function () {
+const injectSass = function () {
     var target = gulp.src(paths.rootSass);
 
     var sources = gulp.src([paths.sass].concat(['!' + paths.rootSass, `${sassStaticInclRoot}**/*.scss`]), {
@@ -72,9 +72,9 @@ gulp.task('inject:sass', function () {
         endtag: '// endinject',
     }))
         .pipe(gulp.dest(f => f.base));
-});
+};
 
-gulp.task('sprite:png', function () {
+const spritePng = function () {
     var spriteData =
         gulp.src(paths.pngSprite)
             .pipe(spritesmith({
@@ -88,104 +88,106 @@ gulp.task('sprite:png', function () {
                 imgPath: '/img/' + pngSpriteFileName
             }));
 
-    spriteData.img
-        .pipe(gulp.dest(paths.pngSpriteDest));
+    return mergeStream(
+        spriteData.img
+            .pipe(gulp.dest(paths.pngSpriteDest)),
+        spriteData.css
+            .pipe(gulp.dest(paths.pngSpriteSassDest)));
+};
 
-    spriteData.css
-        .pipe(gulp.dest(paths.pngSpriteSassDest));
-});
 
-gulp.task('favicon:gen', function (done) {
-    realFavicon.generateFavicon({
-        masterPicture: paths.favicon,
-        dest: paths.faviconDest,
-        iconsPath: '/favicon',
-        design: {
-            ios: {
-                pictureAspect: 'noChange',
-                assets: {
-                    ios6AndPriorIcons: false,
-                    ios7AndLaterIcons: false,
-                    precomposedIcons: false,
-                    declareOnlyDefaultIcon: true
-                }
-            },
-            desktopBrowser: {},
-            windows: {
-                pictureAspect: 'noChange',
-                backgroundColor: '#da532c',
-                onConflict: 'override',
-                assets: {
-                    windows80Ie10Tile: false,
-                    windows10Ie11EdgeTiles: {
-                        small: false,
-                        medium: true,
-                        big: false,
-                        rectangle: false
+const favicon = series([
+    function (done) {
+        realFavicon.generateFavicon({
+            masterPicture: paths.favicon,
+            dest: paths.faviconDest,
+            iconsPath: '/favicon',
+            design: {
+                ios: {
+                    pictureAspect: 'noChange',
+                    assets: {
+                        ios6AndPriorIcons: false,
+                        ios7AndLaterIcons: false,
+                        precomposedIcons: false,
+                        declareOnlyDefaultIcon: true
                     }
-                }
-            },
-            androidChrome: {
-                pictureAspect: 'noChange',
-                themeColor: '#ffffff',
-                manifest: {
-                    display: 'standalone',
-                    orientation: 'notSet',
-                    onConflict: 'override',
-                    declared: true
                 },
-                assets: {
-                    legacyIcon: false,
-                    lowResolutionIcons: false
+                desktopBrowser: {},
+                windows: {
+                    pictureAspect: 'noChange',
+                    backgroundColor: '#da532c',
+                    onConflict: 'override',
+                    assets: {
+                        windows80Ie10Tile: false,
+                        windows10Ie11EdgeTiles: {
+                            small: false,
+                            medium: true,
+                            big: false,
+                            rectangle: false
+                        }
+                    }
+                },
+                androidChrome: {
+                    pictureAspect: 'noChange',
+                    themeColor: '#ffffff',
+                    manifest: {
+                        display: 'standalone',
+                        orientation: 'notSet',
+                        onConflict: 'override',
+                        declared: true
+                    },
+                    assets: {
+                        legacyIcon: false,
+                        lowResolutionIcons: false
+                    }
+                },
+                safariPinnedTab: {
+                    pictureAspect: 'blackAndWhite',
+                    threshold: 54.6875,
+                    themeColor: '#5bbad5'
                 }
             },
-            safariPinnedTab: {
-                pictureAspect: 'blackAndWhite',
-                threshold: 54.6875,
-                themeColor: '#5bbad5'
-            }
-        },
-        settings: {
-            scalingAlgorithm: 'Mitchell',
-            errorOnImageTooSmall: false
-        },
-        markupFile: paths.faviconData
-    }, function () {
-        done();
-    });
-});
+            settings: {
+                scalingAlgorithm: 'Mitchell',
+                errorOnImageTooSmall: false
+            },
+            markupFile: paths.faviconData
+        }, function () {
+            done();
+        });
+    },
+    function () {
+        return gulp.src([distRoot + '/index.html'])
+            .pipe(realFavicon.injectFaviconMarkups(JSON.parse(fs.readFileSync(paths.faviconData)).favicon.html_code))
+            .pipe(gulp.dest(distRoot));
+    }
+]);
 
-gulp.task('favicon', ['favicon:gen'], function () {
-    return gulp.src([distRoot + '/index.html'])
-        .pipe(realFavicon.injectFaviconMarkups(JSON.parse(fs.readFileSync(paths.faviconData)).favicon.html_code))
-        .pipe(gulp.dest(distRoot));
-});
-
-gulp.task('clean', function () {
+const clean = function () {
     return del([
         distRoot,
         tmpRoot
     ]);
-});
+};
 
-gulp.task('watch', function () {
+const watch = function () {
     gulp.watch(paths.sass, event => {
         if (isOnlyChange(event)) {
-            gulp.start('css');
+            gulp.start(css);
         } else {
-            gulp.start('inject:sass');
+            gulp.start(injectSass);
         }
     });
     gulp.watch(paths.html, () => {
-        gulp.start('reload:html');
+        gulp.start(reloadHtml);
     });
     gulp.watch(paths.pngSprite, function (event) {
-        gulp.start('sprite:png');
+        gulp.start(spritePng);
     });
-});
+};
 
-gulp.task('build:main', gulpSequence('sprite:png', 'css'));
-gulp.task('build:post', () => {
+const buildMain = series(spritePng, css);
+const buildPost = () => {
     let assetsFilter = filter(['**/*', '!**/*.html'], { restore: true, dot: true });
     let htmlFilter = filter(['**/*.html'], { restore: true });
     let cssFilter = filter(['**/*.css'], { restore: true });
@@ -211,26 +213,31 @@ gulp.task('build:post', () => {
             replaceInExtensions: ['.html', '.css']
         }))
         .pipe(gulp.dest(distRoot));
-});
+};
 
-gulp.task('copy', () => {
+const copy = () => {
     gulp.src(paths.copy, { base: './src' })
         .pipe(gulp.dest(distRoot));
-});
+};
 
-gulp.task('build', gulpSequence('clean', 'build:main', 'build:post', ['favicon', 'copy']));
+const build = series(clean, buildMain, buildPost, parallel(favicon, copy));
 
-gulp.task('serve', function () {
+const serve = () => {
     connect.server({
         root: ['src', '.tmp'],
         livereload: true
     });
-});
+};
 
-gulp.task('serve:dist', function () {
+const serveDist = () => {
     connect.server({
         root: ['dist']
     });
-});
+};
 
-gulp.task('default', gulpSequence('build:main', 'serve', 'watch'));
+gulp.task('default', series(buildMain, serve, watch));
+
+module.exports = {
+    build,
+    serveDist
+}
