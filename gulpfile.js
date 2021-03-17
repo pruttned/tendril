@@ -215,10 +215,8 @@ const buildPost = () => {
         .pipe(gulp.dest(distRoot));
 };
 
-const copy = () => {
-    gulp.src(paths.copy, { base: './src' })
-        .pipe(gulp.dest(distRoot));
-};
+const copy = () => gulp.src(paths.copy, { base: './src' })
+    .pipe(gulp.dest(distRoot));
 
 const build = series(clean, buildMain, buildPost, parallel(favicon, copy));
 
