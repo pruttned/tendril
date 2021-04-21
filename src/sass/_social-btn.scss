@@ -14,10 +14,11 @@ $block: '.social-btn';
             @include sprite-position($sprite-icon-devlog-hover);
         }
     }
-    &--indiedb {
-        @include sprite($sprite-icon-indiedb);
+    &--youtube {
+        @include sprite($sprite-icon-youtube);
         &:hover {
-            @include sprite-position($sprite-icon-indiedb-hover);
+            @include sprite-position($sprite-icon-youtube-hover);
         }
     }
+    
 }
