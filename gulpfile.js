@@ -37,7 +37,7 @@ const paths = {
     faviconData: tmpRoot + 'faviconData.json',
     favicon: srcRoot + 'favicon.png',
     faviconDest: distRoot + 'favicon',
-    copy: [srcRoot + 'CNAME']
+    copy: [`${srcRoot}CNAME`, `${srcRoot}**/*.svg`]
 };
 
 function isOnlyChange(event) {
