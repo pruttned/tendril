@@ -20,5 +20,10 @@ $block: '.social-btn';
             @include sprite-position($sprite-icon-youtube-hover);
         }
     }
-    
+    &--discord {
+        @include sprite($sprite-icon-discord);
+        &:hover {
+            @include sprite-position($sprite-icon-discord-hover);
+        }
+    }
 }
